@@ -1,5 +1,7 @@
 void setup() {
-  pinMode(1,OUTPUT);
+  for (int i = 0; i < 8; i++) {
+    pinMode(i,OUTPUT);
+  }
   Serial.begin(9600);
 
 }
@@ -7,10 +9,11 @@ void setup() {
 void loop() {
 
 
-  
-  int frecuencia = 1000; //Hz
+
+  int frecuencia = 500000; //Hz
   int amplitud = 10; //normalizado de 0 a 100
   int volSal = (117*amplitud+13800)/100;
+  //int volSal = map(amplitud,0,100,138,255);
   //Serial.println(volSal);
   onOffAnalog(frecuencia,9,volSal);
 
@@ -21,10 +24,26 @@ void loop() {
 
 void onOffAnalog(int frecuencia,int pinSal, int volSal){
   int tiempo = 0;
-  if (frecuencia>=62) {
+  if (frecuencia<500) {
+    tiempo = 500/frecuencia;
+    ntoBits(volSal);
+    delay(tiempo);
+    cero();
+    delay(tiempo);
+  }
+  else{
+    tiempo = 500000 /frecuencia;  //us
+    ntoBits(volSal);
+    delayMicroseconds(tiempo);
+    cero();
+    delayMicroseconds(tiempo);
+  }
+  /*if (frecuencia>=62) {
       tiempo = 500000 /frecuencia;  //us
-      analogWrite(pinSal,230);
+      ntoBits(volSal);
+      //analogWrite(pinSal,230);
       delayMicroseconds(tiempo);
+      PORTD = B00000000;
       //analogWrite(pinSal,0);
       delayMicroseconds(tiempo);
   }
@@ -34,24 +53,27 @@ void onOffAnalog(int frecuencia,int pinSal, int volSal){
     delay(tiempo);
     analogWrite(pinSal,0);
     delay(tiempo);
-  }
+  }*/
 
 }
 
-void onOff(int frecuencia,int pinSal){
-  int tiempo = 0;
-  if (frecuencia>=62) {
-      tiempo = 1000000 /frecuencia;  //us
-      digitalWrite(pinSal,HIGH);
-      delayMicroseconds(tiempo);
-      digitalWrite(pinSal,LOW);
-      delayMicroseconds(tiempo);
+
+void ntoBits(int numero) {
+  short int Bit = 0;
+  for(int i=0;i<=7;i++){
+    if(numero>0){
+      Bit=numero%2;
+      digitalWrite(i,Bit);
+      numero = numero/2;
+    }
+    else{
+      digitalWrite(i,0);
+    }
   }
-  else{
-    tiempo = 1000/ frecuencia;//ms
-    digitalWrite(pinSal,HIGH);
-    delay(tiempo);
-    digitalWrite(pinSal,LOW);
-    delay(tiempo);
+}
+
+void cero(){
+  for (int i = 0; i < 7; i++) {
+    digitalWrite(i,LOW);
   }
 }
